@@ -1,0 +1,55 @@
+hive --auxpath input_files/serDe.jar 
+
+create external table sequences(book_id string, text string) row format serde
+'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+with serdeproperties
+("column.xpath.book_id"="art/ui/text()",
+"column.xpath.text"="art/bdy/sec/text()")
+stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+location '/input_files/documents/'
+TBLPROPERTIES ("xmlinput.start"="<art>",
+"xmlinout.end"="</art>");
+
+
+
+create table sequences(book_id string, text string) row format serde
+
+
+
+
+==============NEW================
+
+
+ggf. fehlende Perlmodule nachinstallieren:
+
+#> cpan Text::xSV XML::Simple
+
+
+script kann einen ganzen ordner bearbeiten oder einzelne Dateien, der
+Ausgabeordner ist auf "output" gestellt - relativ zum Ausführungsort.
+
+Optimalerweise im Ordner der XML-Dateien ausführen, dann gibts es wohl am
+wenigsten Überraschungen
+
+#> perl ../parser.pl
+
+
+BSP:
+
+#> hdfs dfs -mkdir /input_files/documents/
+#> hdfs dfs -put * /input_files/documents/
+
+#> hive # beeline ... etcpp
+
+
+CREATE TABLE documents (filename string, documentid string, chapter string,
+content string )
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+STORED AS TEXTFILE;
+
+
+hive> load data inpath '/input_files/documents/' overwrite into table documents;
+
+
+ab hier darfst du dann crossjoinen ...
